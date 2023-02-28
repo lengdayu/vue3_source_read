@@ -1953,6 +1953,7 @@ function baseCreateRenderer(
           newIndex = keyToNewIndexMap.get(prevChild.key)
         } else {
           // key-less node, try to locate a key-less node of the same type
+          //无键则遍历查找相同的无键节点
           for (j = s2; j <= e2; j++) {
             if (
               newIndexToOldIndexMap[j - s2] === 0 &&
@@ -1963,9 +1964,11 @@ function baseCreateRenderer(
             }
           }
         }
+        //如果在 keyToNewIndexMap中用c1的key去取值，返回undefined，说明c1[i]和新vnode数组剩余有所节点没有相同的key
         if (newIndex === undefined) {
           unmount(prevChild, parentComponent, parentSuspense, true)
         } else {
+          // 这时候的newIndex就是 上面c1[i]在c2中有匹配相同key的节点，返回的在c2中匹配中的节点的下标
           newIndexToOldIndexMap[newIndex - s2] = i + 1
           if (newIndex >= maxNewIndexSoFar) {
             maxNewIndexSoFar = newIndex
@@ -1974,7 +1977,7 @@ function baseCreateRenderer(
           }
           patch(
             prevChild,
-            c2[newIndex] as VNode,
+            c2[newIndex] as VNode,//从这里就可以验证我上一条注释的准确
             container,
             null,
             parentComponent,
@@ -1989,6 +1992,7 @@ function baseCreateRenderer(
 
       // 5.3 move and mount
       // generate longest stable subsequence only when nodes have moved
+      // getSequence是最长递增子序列算法
       const increasingNewIndexSequence = moved
         ? getSequence(newIndexToOldIndexMap)
         : EMPTY_ARR
