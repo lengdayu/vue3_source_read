@@ -1772,7 +1772,7 @@ function baseCreateRenderer(
     let e1 = c1.length - 1 // prev ending index
     let e2 = l2 - 1 // next ending index
 
-    //2.1头部算法，一旦isSameVNodeType比较出来子元素有变化，即停止头部循环比较
+    //2.1前序算法，一旦isSameVNodeType比较出来子元素有变化，即停止头部循环比较
     // 1. sync from start
     // (a b) c
     // (a b) d e
@@ -1799,7 +1799,7 @@ function baseCreateRenderer(
       i++
     }
 
-    //2.2尾部算法，一旦isSameVNodeType比较出来子元素有变化，即停止尾部循环比较
+    //2.2后序算法，一旦isSameVNodeType比较出来子元素有变化，即停止尾部循环比较
     // 2. sync from end
     // a (b c)
     // d e (b c)
@@ -1936,8 +1936,9 @@ function baseCreateRenderer(
       for (i = s1; i <= e1; i++) {
         const prevChild = c1[i]
 
+        // 有多余的旧节点给他删除
         //tobepatched = C2.length - 1  -s2 + 1
-        //patched >= tobepatched 说明 新vnode数组已经全部patch完毕，只能删除 就vnode剩余的数组元素
+        //patched >= tobepatched 说明 新vnode数组已经全部patch完毕，只能删除 旧的vnode剩余的数组元素
 
         if (patched >= toBePatched) {
           // all new children have been patched so this can only be a removal
@@ -1964,6 +1965,7 @@ function baseCreateRenderer(
             }
           }
         }
+        // 如果新节点不包含旧节点也给他删除
         //如果在 keyToNewIndexMap中用c1的key去取值，返回undefined，说明c1[i]和新vnode数组剩余有所节点没有相同的key
         if (newIndex === undefined) {
           unmount(prevChild, parentComponent, parentSuspense, true)
@@ -1972,7 +1974,7 @@ function baseCreateRenderer(
           newIndexToOldIndexMap[newIndex - s2] = i + 1
           if (newIndex >= maxNewIndexSoFar) {
             maxNewIndexSoFar = newIndex
-          } else {
+          } else { 
             moved = true
           }
           patch(
