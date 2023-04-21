@@ -248,6 +248,7 @@ export function markRaw<T extends object>(value: T): Raw<T> {
   return value
 }
 
+//如果传进来的是引用类型，也就是数组或者对象，那么会通过reactive实现响应式，否则直接返回原值value
 export const toReactive = <T extends unknown>(value: T): T =>
   isObject(value) ? reactive(value) : value
 

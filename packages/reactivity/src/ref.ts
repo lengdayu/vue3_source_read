@@ -74,11 +74,15 @@ export function isRef(r: any): r is Ref {
   return !!(r && r.__v_isRef === true)
 }
 
+// ref的实现源码
+// 利用函数重载实现多种方法
 export function ref<T extends object>(
   value: T
 ): [T] extends [Ref] ? T : Ref<UnwrapRef<T>>
 export function ref<T>(value: T): Ref<UnwrapRef<T>>
 export function ref<T = any>(): Ref<T | undefined>
+// value是传进来想要实现响应式的数值
+// 然后调用下面的createRef方法创建响应式，往下走
 export function ref(value?: unknown) {
   return createRef(value, false)
 }
@@ -92,10 +96,15 @@ export function shallowRef<T extends object>(
 ): T extends Ref ? T : ShallowRef<T>
 export function shallowRef<T>(value: T): ShallowRef<T>
 export function shallowRef<T = any>(): ShallowRef<T | undefined>
+
+// shallowRef实现原理和Ref区别只在createRef（）第二个参数默认true
 export function shallowRef(value?: unknown) {
   return createRef(value, true)
 }
 
+// 首先判断穿件来的value是否是响应式，如果是直接返回，如果不是则创建一个新的响应式对象
+// shallow 表示是否需要浅层比较
+// 通过RefImpl类创建响应式对象，往下走
 function createRef(rawValue: unknown, shallow: boolean) {
   if (isRef(rawValue)) {
     return rawValue
@@ -103,6 +112,8 @@ function createRef(rawValue: unknown, shallow: boolean) {
   return new RefImpl(rawValue, shallow)
 }
 
+// RefImpl类
+// _value私有属性，就是我们传进来的值，通过get和set实现proxy
 class RefImpl<T> {
   private _value: T
   private _rawValue: T
@@ -110,16 +121,21 @@ class RefImpl<T> {
   public dep?: Dep = undefined
   public readonly __v_isRef = true
 
+  // __v_isShallow是上面传进来，表示  是否需要浅层比较   的标志
   constructor(value: T, public readonly __v_isShallow: boolean) {
     this._rawValue = __v_isShallow ? value : toRaw(value)
+    // __v_isShallow如果是true 直接返回传进来的value，否则调用toReactive
+    // 点击 toReactive 跳转到 reactive.ts接着看
     this._value = __v_isShallow ? value : toReactive(value)
   }
 
+  //通过track实现依赖的收集       和自己通过customRef自己实现一个响应式一样
   get value() {
     trackRefValue(this)
     return this._value
   }
 
+  //通过trigger实现依赖的跟新     和自己通过customRef自己实现一个响应式一样
   set value(newVal) {
     const useDirectValue =
       this.__v_isShallow || isShallow(newVal) || isReadonly(newVal)
