@@ -102,14 +102,14 @@ export function shallowRef(value?: unknown) {
   return createRef(value, true)
 }
 
-// 首先判断穿件来的value是否是响应式，如果是直接返回，如果不是则创建一个新的响应式对象
+// 首先判断传进来的value是否是响应式，如果是直接返回，如果不是则创建一个新的响应式对象
 // shallow 表示是否需要浅层比较
 // 通过RefImpl类创建响应式对象，往下走
 function createRef(rawValue: unknown, shallow: boolean) {
   if (isRef(rawValue)) {
     return rawValue
   }
-  return new RefImpl(rawValue, shallow)
+  return new RefImpl(rawValue, shallow) 
 }
 
 // RefImpl类
